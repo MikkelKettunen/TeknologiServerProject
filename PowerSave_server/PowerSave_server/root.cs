@@ -52,6 +52,7 @@ namespace PowerSave_server
                 {
                     //  a new client connected
                     m_clients.Add(newClient);
+                    Console.WriteLine("there is now {0} online clients", m_clients.Count);
                 }
                 foreach (Client c in m_clients)
                 {
@@ -67,6 +68,7 @@ namespace PowerSave_server
                 }
                 m_toBeRemoved.Clear();
                 m_arduino.readData();
+                //System.Threading.Thread.Sleep(10);
             }
         }
 

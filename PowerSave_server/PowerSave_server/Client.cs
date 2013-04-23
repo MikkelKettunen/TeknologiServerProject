@@ -72,11 +72,17 @@ namespace PowerSave_server
             catch (SocketException se)
             {
                 if (se.ErrorCode != (int)SocketError.WouldBlock)
-                Console.WriteLine(se.Message);
+                {
+                    Console.WriteLine(se.Message);
+                    m_isOnline = false;
+                    return;
+                }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+                m_isOnline = false;
+                return;
             }
             parseBuffer();
         }
@@ -186,7 +192,13 @@ namespace PowerSave_server
 
         public void sendPacket(scPacket pck)
         {
-            m_socket.Send(pck.getRawData().ToArray());
+            try
+            {
+                m_socket.Send(pck.getRawData().ToArray());
+            }
+            catch (Exception e)
+            {
+            }
         }
 
         void updateSocket(short sockid, byte state)
