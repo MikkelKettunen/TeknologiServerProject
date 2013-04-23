@@ -68,7 +68,7 @@ namespace PowerSave_server
                     for (; ; )
                     {
                         byte data = (byte)DS.sp.ReadByte();
-                        parseByte(data);
+                        parseByte(data, DS);
                     }
                 }
                 catch (TimeoutException e)
@@ -83,7 +83,7 @@ namespace PowerSave_server
             }
         }
 
-        void parseByte(byte data)
+        void parseByte(byte data, internalDataStructure DS)
         {
             if (!isFromArduino(data))
             {
@@ -91,6 +91,29 @@ namespace PowerSave_server
                 return;
             }
             Console.WriteLine("got packet {0}", data);
+            parseArduinoData(data, DS);
+        }
+
+        void parseArduinoData(byte data, internalDataStructure DS)
+        {
+            // extract the id
+            byte id = (byte)(data & 31);
+            Console.WriteLine("server got id {0} from arduino", id);
+            // this should be the first
+            if (DS.packetData.Count == 0)
+            {
+                Console.WriteLine("Got data from Arduino but didn't expect any");
+                return;
+            }
+            for(int i = 0; i < DS.packetData.Count; i++)
+            {
+                if (DS.packetData[i] == id)
+                {
+                    DS.packetData.RemoveAt(i);
+                    Console.WriteLine("Got arduino data as expected with id {0}", id);
+                    break;
+                }
+            }
         }
 
         bool isFromArduino(byte data)
