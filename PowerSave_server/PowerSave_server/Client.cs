@@ -184,12 +184,12 @@ namespace PowerSave_server
             pck.writeShort((short)relays.Count);
             for (int i = 0; i < relays.Count; i++)
             {
-                pck.writeShort(relays[i].getID());
-                pck.writeByte((byte)relays[i].getCurrentState());
-                pck.writeLong(relays[i].getTotalUptime());
-                pck.writeLong(relays[i].getDailyUptime());
-                pck.writeLong(relays[i].getDailyDowntime());
-                pck.writeLong(relays[i].getWatt());
+                pck.writeShort(relays[i].getID());                  //2
+                pck.writeByte((byte)relays[i].getCurrentState());   //3
+                pck.writeLong(relays[i].getTotalUptime());          //7
+                pck.writeLong(relays[i].getDailyUptime());          //11
+                pck.writeLong(relays[i].getDailyDowntime());        //15
+                pck.writeLong(relays[i].getWatt());                 //19
             }
             sendPacket(pck);
         }

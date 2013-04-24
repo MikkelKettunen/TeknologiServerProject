@@ -161,13 +161,19 @@ namespace PowerSave_server
         public List<relay> getAllRelays()
         {
             List<relay> all = new List<relay>();
+            List<int> added = new List<int>();
             foreach (internalDataStructure DS in m_connected)
             {
                 foreach (relay r in DS.relays)
                 {
-                    all.Add(r);
+                    if (!added.Contains(r.getID()))
+                    {
+                        all.Add(r);
+                        added.Add(r.getID());
+                    }
                 }
             }
+            
             return all;
         }
     }

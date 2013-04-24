@@ -122,14 +122,8 @@ namespace PowerSave_server
 
         public void writeLong(int data)
         {
-            byte[] toByte = new byte[4]{
-                (byte)(data >> 24),
-                (byte)(data >> 16),
-                (byte)(data >> 8),
-                (byte)(data)
-            };
-            for (int i = 0; i < 4; i++)
-                m_packetData.Add(toByte[i]);
+            writeShort((short)(data >> 16));
+            writeShort((short)data);
         }
 
         public byte readByte()

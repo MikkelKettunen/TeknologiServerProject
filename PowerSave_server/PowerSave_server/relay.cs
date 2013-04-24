@@ -46,8 +46,27 @@ namespace PowerSave_server
 
         private void updateTime()
         {
-            DateTime now = DateTime.Now; 
-            // TODO: update the uptime in here
+            DateTime now = DateTime.Now;
+            int dif = getUnixTimestampDifference(now, m_lastUpdate);
+            if (dif > 0)
+            {
+                if (m_state == RELAY_STATE.ON)
+                {
+                    m_dailyUptime += dif;
+                }
+                else if (m_state == RELAY_STATE.OFF)
+                {
+                    m_dailyDowntime += dif;
+                }
+                m_lastUpdate = now;
+            }
+
+            if (now.Day != m_today.Day)
+            {
+                m_dailyDowntime = 0;
+                m_dailyUptime = 0;
+                m_today = DateTime.Now;
+            }
         }
 
         public void setState(RELAY_STATE state)
@@ -74,7 +93,7 @@ namespace PowerSave_server
         public int getTotalUptime()
         {
             updateTime();
-            return m_startTime - getUnixTimestamp(DateTime.Now);
+            return getUnixTimestamp(DateTime.Now) - m_startTime;
         }
 
         public int getDailyUptime()
