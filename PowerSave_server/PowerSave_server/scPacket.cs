@@ -87,7 +87,16 @@ namespace PowerSave_server
                     }
                     m_packetID = (byte)PACKET_TYPE.ERR_NOT_DONE;
                     return false;
-                
+                case PACKET_TYPE.C_SOCKET_POWER_UPDATE:
+                    if (raw.Count >= 7)
+                    {
+                        m_packetID = raw[0];
+                        for (int i = 1; i < 7; i++)
+                            m_packetData.Add(raw[i]);
+                        m_pos = 0;
+                        return true;
+                    }
+                    break;
             }
             m_packetID = (byte)PACKET_TYPE.ERR_INVALID_PACKET;
             return false;

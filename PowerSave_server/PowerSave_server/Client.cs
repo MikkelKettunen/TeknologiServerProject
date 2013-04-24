@@ -109,52 +109,64 @@ namespace PowerSave_server
         {
             switch ((PACKET_TYPE)pck.getPacketType())
             {
-            case PACKET_TYPE.C_HANDSHAKE:
-                if (m_state == CLIENT_STATE.HANDHAKE)
-                {
-                    Console.WriteLine("got handshake");
-                    sendAcceptPacket();
-                    m_state = CLIENT_STATE.ONLINE;
-                }
-                else
-                {
-                    // kick the client for sending wrong packets!
-                    kick("Handshake recieved from client, but it is already online!");
-                }
-                break;
-            case PACKET_TYPE.C_GET_ONLINE_CLIENTS:
-                if (m_state == CLIENT_STATE.ONLINE)
-                {
-                    Console.WriteLine("got GET_ONLINE_CLIENTS packet!");
-                    sendOnlineSockets();
-                }
-                else
-                {
-                    kick("got packet GET_ONLINE_CLIENTS, but client is not online!!");
-                }
-                break;
-            case PACKET_TYPE.C_UPDATE_SOCKET_STATE:
-                if (m_state == CLIENT_STATE.ONLINE)
-                {
-                    Console.WriteLine("got UPDATE_SOCKET_STATE packet!");
-                    short sockId = pck.readShort();
-                    byte state = pck.readByte();
-                    if (Program.getRoot().setRelayState(sockId, state))
+                case PACKET_TYPE.C_HANDSHAKE:
+                    if (m_state == CLIENT_STATE.HANDHAKE)
                     {
-                        Console.WriteLine("updated socket {0} to state {1}", sockId, state);
-                        updateSocket(sockId, state);
-                        sendSockUpdateToAll(sockId, state);
+                        Console.WriteLine("got handshake");
+                        sendAcceptPacket();
+                        m_state = CLIENT_STATE.ONLINE;
                     }
                     else
                     {
-                        Console.WriteLine("failed updated socket {0} to state {1}", sockId, state);
+                        // kick the client for sending wrong packets!
+                        kick("Handshake recieved from client, but it is already online!");
                     }
-                }
-                else
-                {
-                    kick("got packet UPDATE_SOCKET_STATE, but client is not online!!");
-                }
-                break;
+                    break;
+                case PACKET_TYPE.C_GET_ONLINE_CLIENTS:
+                    if (m_state == CLIENT_STATE.ONLINE)
+                    {
+                        Console.WriteLine("got GET_ONLINE_CLIENTS packet!");
+                        sendOnlineSockets();
+                    }
+                    else
+                    {
+                        kick("got packet GET_ONLINE_CLIENTS, but client is not online!!");
+                    }
+                    break;
+                case PACKET_TYPE.C_UPDATE_SOCKET_STATE:
+                    if (m_state == CLIENT_STATE.ONLINE)
+                    {
+                        Console.WriteLine("got UPDATE_SOCKET_STATE packet!");
+                        short sockId = pck.readShort();
+                        byte state = pck.readByte();
+                        if (Program.getRoot().setRelayState(sockId, state))
+                        {
+                            Console.WriteLine("updated socket {0} to state {1}", sockId, state);
+                            updateSocket(sockId, state);
+                            sendSockUpdateToAll(sockId, state);
+                        }
+                        else
+                        {
+                            Console.WriteLine("failed updated socket {0} to state {1}", sockId, state);
+                        }
+                    }
+                    else
+                    {
+                        kick("got packet UPDATE_SOCKET_STATE, but client is not online!!");
+                    }
+                    break;
+                case PACKET_TYPE.C_SOCKET_POWER_UPDATE:
+                    if (m_state != CLIENT_STATE.ONLINE)
+                    {
+                        kick("got packet C_SOCKET_POWER_UPDATE but client is not online!");
+                        return;
+                    }
+                    short socketid = pck.readShort();
+                    int watt = pck.readLong();
+                    Console.WriteLine("C_SOCKET_POWER_UPDATE watt{0}, sockid{1}", watt, socketid);
+                    updateSocketPowerUsage(socketid, watt);
+                    sendWattUsageUpdate(socketid, watt);
+                    break;
             }
         }
 
@@ -225,5 +237,26 @@ namespace PowerSave_server
             pck.writeByte(state);
             Program.getRoot().sendToAll(pck);
         }
-    } 
+
+        void updateSocketPowerUsage(short sockid, int watt)
+        { 
+            List<relay> relays = Program.getRoot().getRelays();
+            for (int i = 0; i < relays.Count; i++)
+            {
+                if (relays[i].getID() == sockid)
+                {
+                    relays[i].setWatt(watt);
+                    break;
+                }
+            }
+        }
+
+        void sendWattUsageUpdate(short socketid, int watt)
+        {
+            scPacket pck = new scPacket(PACKET_TYPE.S_SOCKET_POWER_UPDATE);
+            pck.writeShort(socketid);
+            pck.writeLong(watt);
+            Program.getRoot().sendToAll(pck);
+        }
+    }
 }
