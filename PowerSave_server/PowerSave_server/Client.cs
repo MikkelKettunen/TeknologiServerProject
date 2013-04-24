@@ -24,7 +24,7 @@ namespace PowerSave_server
 
         // a place we will save the data from the client
         List<byte> m_buffer;
-
+        // so we know if a client connected right
         bool m_isOnline;
 
         // called when we make a new client
@@ -186,6 +186,10 @@ namespace PowerSave_server
             {
                 pck.writeShort(relays[i].getID());
                 pck.writeByte((byte)relays[i].getCurrentState());
+                pck.writeLong(relays[i].getTotalUptime());
+                pck.writeLong(relays[i].getDailyUptime());
+                pck.writeLong(relays[i].getDailyDowntime());
+                pck.writeLong(relays[i].getWatt());
             }
             sendPacket(pck);
         }

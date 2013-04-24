@@ -53,8 +53,13 @@ namespace PowerSave_server
             relay nRelay = new relay(relay.RELAY_STATE.ON, 1);
             data.relays.Add(nRelay);
             m_connected.Add(data);
-
             sendSetState(nRelay, relay.RELAY_STATE.ON, data);
+
+            nRelay = new relay(relay.RELAY_STATE.ON, 2);
+            data.relays.Add(nRelay);
+            m_connected.Add(data);
+            sendSetState(nRelay, relay.RELAY_STATE.ON, data);
+
             return true;
         }
 
@@ -130,6 +135,7 @@ namespace PowerSave_server
                 if (ds.relays[i].getID() == relayID)
                 {
                     sendSetState(ds.relays[i], state, ds);
+                    ds.relays[i].setState(state);
                     return true;
                 }
             }

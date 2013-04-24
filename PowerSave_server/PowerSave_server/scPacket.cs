@@ -19,6 +19,10 @@ namespace PowerSave_server
         S_SEND_ONLINE_CLIENTS = 0x04,
         C_UPDATE_SOCKET_STATE = 0x05,
         S_SOCKET_UPDATE = 0x06,
+        C_SOCKET_POWER_UPDATE = 0x07,
+        S_SOCKET_POWER_UPDATE = 0x08,
+        C_REQUEST_SOCKET_INFO = 0x09,
+        S_SOCKET_POWER_INFO = 0x0A,
         // invalid states
         ERR_NOT_DONE = 0xFC,
         ERR_INVALID_PACKET = 0xFE,
@@ -81,7 +85,9 @@ namespace PowerSave_server
                         m_pos = 0;
                         return true;
                     }
-                    break;
+                    m_packetID = (byte)PACKET_TYPE.ERR_NOT_DONE;
+                    return false;
+                
             }
             m_packetID = (byte)PACKET_TYPE.ERR_INVALID_PACKET;
             return false;
@@ -114,6 +120,18 @@ namespace PowerSave_server
             m_packetData.Add(data);
         }
 
+        public void writeLong(int data)
+        {
+            byte[] toByte = new byte[4]{
+                (byte)(data >> 24),
+                (byte)(data >> 16),
+                (byte)(data >> 8),
+                (byte)(data)
+            };
+            for (int i = 0; i < 4; i++)
+                m_packetData.Add(toByte[i]);
+        }
+
         public byte readByte()
         {
             return m_packetData[m_pos++];
@@ -121,8 +139,17 @@ namespace PowerSave_server
 
         public short readShort()
         {
-            short tmp = (short)(readByte() << 8);
+            short tmp = (short)(readByte());
+            tmp <<= 8;
             tmp |= (short)readByte();
+            return tmp;
+        }
+
+        public int readLong()
+        {
+            int tmp = (int)readShort();
+            tmp <<= 16;
+            //tmp = 
             return tmp;
         }
     }

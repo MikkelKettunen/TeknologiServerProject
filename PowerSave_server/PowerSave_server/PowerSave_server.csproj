@@ -50,7 +50,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="root.cs" />
     <Compile Include="scPacket.cs" />
-    <Compile Include="sockets.cs" />
+    <Compile Include="relay.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
