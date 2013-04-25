@@ -167,6 +167,15 @@ namespace PowerSave_server
                     updateSocketPowerUsage(socketid, watt);
                     sendWattUsageUpdate(socketid, watt);
                     break;
+                case PACKET_TYPE.C_REQUEST_SOCKET_INFO:
+                    if (m_state != CLIENT_STATE.ONLINE)
+                    {
+                        kick("got packet C_REQUEST_POWER_UPDATE but client is not online");
+                        return;
+                    }
+                    short sockid = pck.readShort();
+                    sendSocketPowerInfo(sockid);
+                    break;
             }
         }
 
@@ -257,6 +266,27 @@ namespace PowerSave_server
             pck.writeShort(socketid);
             pck.writeLong(watt);
             Program.getRoot().sendToAll(pck);
+        }
+
+        void sendSocketPowerInfo(short socketid)
+        {
+            List<relay> relays = Program.getRoot().getRelays();
+            for (int i = 0; i < relays.Count; i++)
+            {
+                if (relays[i].getID() == socketid)
+                {
+                    scPacket pck = new scPacket(PACKET_TYPE.S_SOCKET_POWER_INFO);
+                    pck.writeShort(socketid);
+                    byte state = (byte)(relays[i].getCurrentState() == relay.RELAY_STATE.ON ? 1 : 0);
+                    pck.writeByte(state);
+                    pck.writeLong(relays[i].getTotalUptime());
+                    pck.writeLong(relays[i].getDailyUptime());
+                    pck.writeLong(relays[i].getDailyDowntime());
+                    pck.writeLong(relays[i].getWatt());
+                    sendPacket(pck);
+                    break;
+                }
+            }
         }
     }
 }
