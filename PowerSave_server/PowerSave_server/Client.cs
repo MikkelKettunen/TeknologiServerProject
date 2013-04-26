@@ -175,6 +175,7 @@ namespace PowerSave_server
                     }
                     short sockid = pck.readShort();
                     sendSocketPowerInfo(sockid);
+                    Console.WriteLine("got packet C_REQUEST_SOCKET_UPDATE sockid {0}", sockid);
                     break;
             }
         }

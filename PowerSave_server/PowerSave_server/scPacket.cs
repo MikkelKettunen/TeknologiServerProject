@@ -96,7 +96,19 @@ namespace PowerSave_server
                         m_pos = 0;
                         return true;
                     }
-                    break;
+                    m_packetID = (byte)PACKET_TYPE.ERR_NOT_DONE;
+                    return false;
+                case PACKET_TYPE.C_REQUEST_SOCKET_INFO:
+                    if (raw.Count >= 3)
+                    {
+                        m_packetID = raw[0];
+                        for (int i = 1; i < 3; i++)
+                            m_packetData.Add(raw[i]);
+                        m_pos = 0;
+                        return true;
+                    }
+                    m_packetID = (byte)PACKET_TYPE.ERR_NOT_DONE;
+                    return false;
             }
             m_packetID = (byte)PACKET_TYPE.ERR_INVALID_PACKET;
             return false;
@@ -152,7 +164,7 @@ namespace PowerSave_server
         {
             int tmp = (int)readShort();
             tmp <<= 16;
-            //tmp = 
+            tmp |= readShort();
             return tmp;
         }
     }
