@@ -34,7 +34,7 @@ namespace PowerSave_server
             m_totalUptime = 0;
             m_dailyDowntime = 0;
             m_dailyUptime = 0;
-            m_startTime = getUnixTimestamp(DateTime.Now);
+            m_startTime = unixtime.getCurrentTime();
             m_today = DateTime.Now;
             m_startDateTime = DateTime.Now;
             m_lastUpdate = m_startTime;
@@ -47,7 +47,7 @@ namespace PowerSave_server
         private void updateTime()
         {
             DateTime now = DateTime.Now;
-            int unixTime = getUnixTimestamp(now);
+            int unixTime = unixtime.getCurrentTime();
             int dif = unixTime - m_lastUpdate;
             if (dif > 0)
             {
@@ -113,16 +113,6 @@ namespace PowerSave_server
         public int getWatt()
         {
             return m_watt;
-        }
-
-        private int getUnixTimestamp(DateTime dateTime)
-        {
-            return (int)(dateTime - new DateTime(1970, 1, 1).ToLocalTime()).TotalSeconds;
-        }
-
-        private int getUnixTimestampDifference(DateTime start, DateTime now)
-        {
-            return (int)(start - now).TotalSeconds;
         }
     }
 }

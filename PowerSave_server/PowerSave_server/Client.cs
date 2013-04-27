@@ -27,6 +27,14 @@ namespace PowerSave_server
         // so we know if a client connected right
         bool m_isOnline;
 
+        // for ping packet
+        string m_message;
+        // unix time when the last packet was sent
+        int m_sendTime;
+        // dateTime variable for when the packet was sent
+        DateTime m_packetSend;
+        int m_latency;
+
         // called when we make a new client
         public Client(Socket sock)
         {
@@ -85,6 +93,15 @@ namespace PowerSave_server
                 return;
             }
             parseBuffer();
+
+            if (isOnline())
+            {
+                // okay now check if we should send the ping packet
+                if (m_sendTime + 45 < unixtime.getCurrentTime())
+                {
+                    sendPingPacket();
+                }
+            }
         }
 
         void parseBuffer()
@@ -115,6 +132,8 @@ namespace PowerSave_server
                         Console.WriteLine("got handshake");
                         sendAcceptPacket();
                         m_state = CLIENT_STATE.ONLINE;
+                        m_latency = 0;
+                        m_sendTime = unixtime.getCurrentTime();
                     }
                     else
                     {
@@ -288,6 +307,17 @@ namespace PowerSave_server
                     break;
                 }
             }
+        }
+
+        void sendPingPacket()
+        {
+            m_sendTime = unixtime.getCurrentTime();
+            m_packetSend = DateTime.Now;
+            // just use time to generate a random string
+            m_message = DateTime.Now.Millisecond.ToString();
+            scPacket pck = new scPacket(PACKET_TYPE.SC_PING);
+            pck.writeString(m_message);
+            sendPacket(pck);
         }
     }
 }

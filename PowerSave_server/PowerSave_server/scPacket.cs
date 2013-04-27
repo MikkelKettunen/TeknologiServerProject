@@ -147,6 +147,15 @@ namespace PowerSave_server
             writeShort((short)data);
         }
 
+        public void writeString(string msg)
+        {
+            writeShort((short)msg.Length);
+            for (int i = 0; i < msg.Length; i++)
+            {
+                writeShort((short)msg[i]);
+            }
+        }
+
         public byte readByte()
         {
             return m_packetData[m_pos++];
