@@ -109,6 +109,21 @@ namespace PowerSave_server
                     }
                     m_packetID = (byte)PACKET_TYPE.ERR_NOT_DONE;
                     return false;
+                case PACKET_TYPE.SC_PING:
+                    if (raw.Count >= 3)
+                    {
+                        short len = (short)(raw[1] << 8 | raw[2]);
+                        if (raw.Count >= 3 + len*2)
+                        {
+                            for (int i = 1; i < 3 + len*2; i++)
+                                m_packetData.Add(raw[i]);
+                            m_pos = 0;
+                            m_packetID = raw[0];
+                            return true;
+                        }
+                    }
+                    m_packetID = (byte)PACKET_TYPE.ERR_NOT_DONE;
+                    return false;
             }
             m_packetID = (byte)PACKET_TYPE.ERR_INVALID_PACKET;
             return false;
@@ -175,6 +190,15 @@ namespace PowerSave_server
             tmp <<= 16;
             tmp |= readShort();
             return tmp;
+        }
+
+        public string readString()
+        {
+            string msg = "";
+            short len = readShort();
+            for (int i = 0; i < len; i++)
+                msg += (char)readShort();
+            return msg;
         }
     }
 }

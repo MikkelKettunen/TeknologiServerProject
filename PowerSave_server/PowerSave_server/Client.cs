@@ -34,6 +34,7 @@ namespace PowerSave_server
         // dateTime variable for when the packet was sent
         DateTime m_packetSend;
         int m_latency;
+        bool m_waitingForPing;
 
         // called when we make a new client
         public Client(Socket sock)
@@ -43,6 +44,7 @@ namespace PowerSave_server
             m_state = CLIENT_STATE.HANDHAKE;
             m_buffer = new List<byte>();
             m_isOnline = true;
+            m_waitingForPing = false;
         }
 
         // called when the client is deleted from the system
@@ -94,7 +96,7 @@ namespace PowerSave_server
             }
             parseBuffer();
 
-            if (isOnline())
+            if (isOnline() && !m_waitingForPing)
             {
                 // okay now check if we should send the ping packet
                 if (m_sendTime + 45 < unixtime.getCurrentTime())
@@ -195,6 +197,24 @@ namespace PowerSave_server
                     short sockid = pck.readShort();
                     sendSocketPowerInfo(sockid);
                     Console.WriteLine("got packet C_REQUEST_SOCKET_UPDATE sockid {0}", sockid);
+                    break; 
+                case PACKET_TYPE.SC_PING:
+                    if (m_state != CLIENT_STATE.ONLINE)
+                    {
+                        kick("got packet SC_PING, but client is not online!");
+                        return;
+                    }
+                    
+                    string msg = pck.readString();
+                    if (msg != m_message)
+                    {
+                        kick("got ping packet, but the strings are not equal!");
+                        return;
+                    }
+                    m_latency = unixtime.getDifferenceMilisecond(m_packetSend, DateTime.Now);
+                    m_sendTime = unixtime.getCurrentTime();
+                    m_waitingForPing = false;
+                    Console.WriteLine("got ping packet latency {0} ms", m_latency);
                     break;
             }
         }
@@ -318,6 +338,8 @@ namespace PowerSave_server
             scPacket pck = new scPacket(PACKET_TYPE.SC_PING);
             pck.writeString(m_message);
             sendPacket(pck);
+            m_waitingForPing = true;
+            Console.WriteLine("sending ping packet");
         }
     }
 }
