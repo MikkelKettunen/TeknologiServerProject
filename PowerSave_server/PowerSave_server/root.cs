@@ -26,7 +26,7 @@ namespace PowerSave_server
             string port = Console.ReadLine();
             while (!m_arduino.addSerialPort(port)) 
             {
-                Console.WriteLine("please try again, that comport does not exist");
+                Console.WriteLine("please enter a valid COM port");
                 port = Console.ReadLine();
             }
         }

@@ -32,11 +32,12 @@ namespace PowerSave_server
 
         public bool addSerialPort(string port)
         {
-            internalDataStructure data = new internalDataStructure();
-            data.sp = new SerialPort(port, 9600, Parity.None, 8, 
-                                    StopBits.One);
+            internalDataStructure data;
             try
             {
+                data = new internalDataStructure();
+                data.sp = new SerialPort(port, 9600, Parity.None, 8, 
+                                        StopBits.One);
                 data.sp.Open();
             }
             catch (Exception e)
