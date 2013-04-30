@@ -50,6 +50,8 @@ namespace PowerSave_server
         // called when the client is deleted from the system
         ~Client()
         {
+            Console.WriteLine("~Client called");
+            ///m_socket.Disconnect(true);
             // close the socket, so we can accept more clients
             m_socket.Close();
         }
@@ -228,6 +230,7 @@ namespace PowerSave_server
         {
             Console.WriteLine("client got kicked: {0}", reason);
             m_isOnline = false;
+            m_socket.Disconnect(true);
         }
 
         void sendAcceptPacket()
