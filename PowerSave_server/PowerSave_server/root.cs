@@ -17,11 +17,13 @@ namespace PowerSave_server
         // we only have 1 arduino right now
         arduinoListener m_arduino;
 
+        FileHandler m_filehandler;
         public root()
         {
             m_clients = new List<Client>();
             m_toBeRemoved = new List<Client>();
             m_arduino = new arduinoListener();
+            m_filehandler = new FileHandler();
             Console.WriteLine("enter an arduino comport");
             string port = Console.ReadLine();
             while (!m_arduino.addSerialPort(port)) 
@@ -89,6 +91,26 @@ namespace PowerSave_server
         public bool setRelayState(short id, byte state)
         {
             return m_arduino.setState((byte)id, (relay.RELAY_STATE)state);
+        }
+
+        public void saveXML(string xml)
+        {
+            m_filehandler.setXML(xml);
+        }
+
+        public string getXML()
+        {
+            return m_filehandler.getXML();
+        }
+
+        public void setPicture(string name, byte[] data)
+        {
+            m_filehandler.addPicture(name, data);
+        }
+
+        public byte[] getPicture(string name)
+        {
+            return m_filehandler.getPicture(name);
         }
     }
 }

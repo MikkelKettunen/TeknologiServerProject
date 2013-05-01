@@ -219,6 +219,65 @@ namespace PowerSave_server
                     m_waitingForPing = false;
                     Console.WriteLine("got ping packet latency {0} ms", m_latency);
                     break;
+                case PACKET_TYPE.SC_SEND_XML:
+                    if (m_state != CLIENT_STATE.ONLINE)
+                    {
+                        kick("got packet SC_SEND_XML, but client is not online!");
+                        return;
+                    }
+                    string xml = pck.readString();
+                    Program.getRoot().saveXML(xml);
+                    // send the xml file to all clients
+                    // its the same packet, so just send it
+                    Program.getRoot().sendToAll(pck);
+                    Console.WriteLine("got SC_SEND_XML lenght {0}", xml.Length);
+                    break;
+                case PACKET_TYPE.C_GET_XML:
+                    if (m_state != CLIENT_STATE.ONLINE)
+                    {
+                        kick("got packet C_GET_XML, but client is not online!");
+                        return;
+                    }
+                    xml = Program.getRoot().getXML();
+                    scPacket packet = new scPacket(PACKET_TYPE.SC_SEND_XML);
+                    packet.writeString(xml);
+                    sendPacket(packet);
+                    Console.WriteLine("got C_GET_XML");
+                    break;
+                case PACKET_TYPE.SC_SEND_PICTURE:
+                    if (m_state != CLIENT_STATE.ONLINE)
+                    {
+                        kick("got packet SC_SEND_PICTURE, but client is not online!");
+                        return;
+                    }
+                    string name = pck.readString();
+                    int dataLen = pck.readLong();
+                    byte[] data = new byte[dataLen];
+                    for (int i = 0; i < dataLen; i++)
+                        data[i] = pck.readByte();
+                    Program.getRoot().setPicture(name, data);
+                    // send this packet to all clients
+                    Program.getRoot().sendToAll(pck);
+                    Console.WriteLine("got packet SC_SEND_PICTURE name[{0}] = byte[{1}]", name, dataLen);
+                    break;
+                case PACKET_TYPE.C_GET_PICTURE:
+                    if (m_state != CLIENT_STATE.ONLINE)
+                    {
+                        kick("got packet SC_SEND_PICTURE, but client is not online!");
+                        return;
+                    }
+                    name = pck.readString();
+                    data = Program.getRoot().getPicture(name);
+                    packet = new scPacket(PACKET_TYPE.SC_SEND_PICTURE);
+                    packet.writeLong(data.Length);
+                    if (data.Length > 0)
+                    {
+                        for (int i = 0; i < data.Length; i++)
+                            packet.writeByte(data[i]);
+                    }
+                    sendPacket(packet);
+                    Console.WriteLine("got C_GET_PICTURE name = {0}", name);
+                    break;
             }
         }
 
@@ -263,10 +322,15 @@ namespace PowerSave_server
         {
             try
             {
-                m_socket.Send(pck.getRawData().ToArray());
+                byte[] pckData = pck.getRawData().ToArray();
+                int sent = 0;
+                int toBeSent = pckData.Length;
+                while(sent < toBeSent)
+                    sent += m_socket.Send(pckData, sent, pckData.Length, SocketFlags.None);
             }
             catch (Exception e)
             {
+                Console.WriteLine(e.Message);
             }
         }
 

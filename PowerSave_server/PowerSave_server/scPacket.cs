@@ -23,6 +23,10 @@ namespace PowerSave_server
         S_SOCKET_POWER_UPDATE = 0x08,
         C_REQUEST_SOCKET_INFO = 0x09,
         S_SOCKET_POWER_INFO = 0x0A,
+        SC_SEND_XML = 0x0B,
+        C_GET_XML = 0x0C,
+        SC_SEND_PICTURE = 0x0D,
+        C_GET_PICTURE = 0x0E,
         // invalid states
         ERR_NOT_DONE = 0xFC,
         ERR_INVALID_PACKET = 0xFE,
@@ -124,6 +128,53 @@ namespace PowerSave_server
                     }
                     m_packetID = (byte)PACKET_TYPE.ERR_NOT_DONE;
                     return false;
+                case PACKET_TYPE.SC_SEND_XML:
+                    m_packetID = (byte)PACKET_TYPE.ERR_NOT_DONE;
+                    if (raw.Count < 3)
+                        return false;
+                    short strlen = (short)(raw[1] << 8 | raw[2]);
+                    if (raw.Count < 3 + strlen * 2)
+                        return false;
+                    for (int i = 1; i < 3 + strlen * 2; i++)
+                        m_packetData.Add(raw[i]);
+                    m_packetID = raw[0];
+                    m_pos = 0;
+                    return true;
+                case PACKET_TYPE.C_GET_XML:
+                    m_packetID = raw[0];
+                    m_pos = 0;
+                    return true;
+                case PACKET_TYPE.SC_SEND_PICTURE:
+                    m_packetID = (byte)PACKET_TYPE.ERR_NOT_DONE;
+                    if (raw.Count < 7)
+                        return false;
+                    strlen = (short)(raw[1] << 8 | raw[2]);
+                    if (raw.Count < 7 + strlen * 2)
+                        return false;
+                    int offset = 3 + strlen * 2;
+                    int dataLenght = raw[offset] << 24 |
+                                     raw[offset + 1] << 16 |
+                                     raw[offset + 2] << 8 |
+                                     raw[offset + 3];
+                    if (raw.Count < 7 + strlen * 2 + dataLenght)
+                        return false;
+                    m_pos = 0;
+                    m_packetID = raw[0];
+                    for (int i = 1; i < 7 + strlen * 2 + dataLenght; i++ )
+                        m_packetData.Add(raw[i]);
+                    return true;
+                case PACKET_TYPE.C_GET_PICTURE:
+                    m_packetID = (byte)PACKET_TYPE.ERR_NOT_DONE;
+                    if (raw.Count < 3)
+                        return false;
+                    strlen = (short)(raw[1] << 8 | raw[2]);
+                    if (raw.Count < 3 + strlen * 2)
+                        return false;
+                    m_pos = 0;
+                    m_packetID = raw[0];
+                    for(int i = 1; i < 3 + strlen*2; i++)
+                        m_packetData.Add(raw[i]);
+                    return true;
             }
             m_packetID = (byte)PACKET_TYPE.ERR_INVALID_PACKET;
             return false;
