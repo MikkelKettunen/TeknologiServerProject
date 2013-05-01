@@ -186,6 +186,7 @@ namespace PowerSave_server
                     }
                     short socketid = pck.readShort();
                     int watt = pck.readLong();
+                    watt = watt < 0 ? 0 : watt;
                     Console.WriteLine("C_SOCKET_POWER_UPDATE watt{0}, sockid{1}", watt, socketid);
                     updateSocketPowerUsage(socketid, watt);
                     sendWattUsageUpdate(socketid, watt);

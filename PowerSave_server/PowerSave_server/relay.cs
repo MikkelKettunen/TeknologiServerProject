@@ -79,7 +79,7 @@ namespace PowerSave_server
 
         public void setWatt(int watt)
         {
-            m_watt = watt;
+            m_watt = watt < 0 ? 0 : watt;
         }
 
         public RELAY_STATE getCurrentState()
