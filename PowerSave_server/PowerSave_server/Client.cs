@@ -269,14 +269,26 @@ namespace PowerSave_server
                     name = pck.readString();
                     data = Program.getRoot().getPicture(name);
                     packet = new scPacket(PACKET_TYPE.SC_SEND_PICTURE);
-                    packet.writeLong(data.Length);
-                    if (data.Length > 0)
+                    packet.writeString(name);
+                    if (data == null)
                     {
-                        for (int i = 0; i < data.Length; i++)
-                            packet.writeByte(data[i]);
+                        packet.writeLong(0);
+                    }
+                    else
+                    {
+                        packet.writeLong(data.Length);
+                        Console.WriteLine("data lenght {0}", data.Length);
+                        if (data.Length > 0)
+                        {
+                            for (int i = 0; i < data.Length; i++)
+                                packet.writeByte(data[i]);
+                        }
                     }
                     sendPacket(packet);
                     Console.WriteLine("got C_GET_PICTURE name = {0}", name);
+                    break;
+                default:
+                    Console.WriteLine("unknown packet recieved");
                     break;
             }
         }
@@ -323,6 +335,7 @@ namespace PowerSave_server
             try
             {
                 byte[] pckData = pck.getRawData().ToArray();
+                Console.WriteLine("sending {0} bytes", pckData.Length);
                 int sent = 0;
                 int toBeSent = pckData.Length;
                 while(sent < toBeSent)
