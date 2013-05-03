@@ -73,6 +73,8 @@ namespace PowerSave_server
                     // read all the data until we get an exception from no data
                     for (; ; )
                     {
+                        if (DS.sp.BytesToRead == 0)
+                            break;
                         byte data = (byte)DS.sp.ReadByte();
                         parseByte(data, DS);
                     }
